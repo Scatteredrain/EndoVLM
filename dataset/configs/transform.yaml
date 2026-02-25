@@ -1,0 +1,17 @@
+transform_list:
+    resize: 
+        size: [224, 224]
+    random_scale_crop:
+        range: [0.75, 1.25]
+    random_flip:
+        lr: True
+        ud: True
+    random_rotate:
+        range: [0, 359]
+    random_image_enhance:
+        methods: ['contrast', 'sharpness', 'brightness', 'color']
+    tonumpy: NULL
+    normalize: 
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+    totensor: NULL
