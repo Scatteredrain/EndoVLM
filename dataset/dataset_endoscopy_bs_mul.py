@@ -87,6 +87,7 @@ class EndoscopyDataset(data.Dataset):
         self.folder_names = []
         self.anatomy_flags_all = []
         self.image_nums = 0
+        self.texts_raw = []
         
         for i, content in enumerate(data_list):
             # if i % (len(data_list) // 10+1) == 0:
@@ -98,10 +99,11 @@ class EndoscopyDataset(data.Dataset):
             # images = [os.path.join(folder_path, f) for f in os.listdir(folder_path) 
             #          if f.lower().endswith(('.png', '.jpg', '.jpeg')) and '报告' not in f]
             images = [os.path.join(folder_path, f) for f in content['valid_image_paths']]
-            report = content['endo_report']
+            report_raw = content['endo_report_raw']
+            report_structured = content['endo_report']
             abnormal_flags = content['site_abnormality_flags']
             normal_flags = [1-x for x in abnormal_flags]
-            sub_reports_len = len(report.split('\n')[1:])
+            sub_reports_len = len(report_structured.split('\n')[1:])
             # ok, msg = check_image_ok(images[0])
             # if not ok: 
             #     print(msg)
@@ -109,14 +111,15 @@ class EndoscopyDataset(data.Dataset):
             if len(images) == 0: continue
             if len(normal_flags) != sub_reports_len:
                 print(f"Error: flag length {len(normal_flags)} != sub_reports length {sub_reports_len}")
-                print(report,'\n',abnormal_flags)
+                print(report_structured,'\n',abnormal_flags)
                 continue
 
             modality = content['modality']
             anatomy_flags = [0,1,2,3,4,5,6,7] if (modality == 'gastroscopy') else [8,9,10,11,12,13,14,15,16]
             self.anatomy_flags_all.append(anatomy_flags)
             self.bags.append(images)
-            self.texts.append(report)
+            self.texts_raw.append(report_raw)
+            self.texts.append(report_structured)
             self.normal_flags_all.append(normal_flags)
             self.folder_names.append(folder)
             self.image_nums += len(images)
@@ -144,7 +147,8 @@ class EndoscopyDataset(data.Dataset):
     def __getitem__(self, index):
 
         img_paths = self.bags[index]
-        report_text = self.texts[index]
+        report_raw = self.texts_raw[index]
+        report_subs = self.texts[index]
         folder_name = self.folder_names[index]
         normal_flags = self.normal_flags_all[index]
         anatomy_flags = self.anatomy_flags_all[index]
@@ -167,14 +171,14 @@ class EndoscopyDataset(data.Dataset):
                 print(f"Error loading image {img_path}: {e}. But don't worry because we will ignore this image and the bag has enough images.")
                 continue
 
-        lines = [line.strip() for line in report_text.split('\n') if line.strip()]
+        lines = [line.strip() for line in report_subs.split('\n') if line.strip()]
         sub_sentences = lines[1:] if len(lines) > 1 else lines 
         
         if self.mode in ['clip', 'mae']:
-            full_tokens = self.tokenizer(report_text) 
+            full_tokens = self.tokenizer(report_raw) 
             sub_tokens = self.tokenizer(sub_sentences) 
         else:
-            full_tokens = self.tokenizer(report_text, context_length=256) 
+            full_tokens = self.tokenizer(report_raw, context_length=256) 
             sub_tokens = self.tokenizer(sub_sentences, context_length=256) 
 
         return {

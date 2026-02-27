@@ -7,7 +7,9 @@
 
 **EndoVLM** is the first vision-language foundation model pre-trained on a massive dataset of 348K unordered endoscopic image sets paired with comprehensive gastrointestinal clinical reports. By resolving the profound semantic gap between highly redundant visual frames and structured clinical narratives, EndoVLM provides a highly scalable and robust foundation for next-generation AI-assisted endoscopy.
 
-![Overview](figs/method.png)
+<p align="center">
+  <img src="figs/method.png" width="600">
+</p>
 
 ## 🌟 Key Highlights
 
@@ -69,9 +71,9 @@ EndoVLM is pre-trained on unordered image sets and corresponding clinical report
 ```text
 data/
 ├── images/
-│   ├── patient_00001/
-│   │   ├── frame_01.jpg
-│   │   ├── frame_02.jpg
+│   ├── patient_000000001/
+│   │   ├── image_0001.jpg
+│   │   ├── image_0002.jpg
 │   │   └── ...
 │   └── ...
 └── reports/
