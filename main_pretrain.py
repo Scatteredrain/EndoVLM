@@ -27,21 +27,13 @@ import timm
 import open_clip
 # assert timm.__version__ == "0.3.2"  # version check
 # import timm.optim.optim_factory as optim_factory
-
 import util.misc as misc
 from util.misc import NativeScalerWithGradNormCount as NativeScaler
 from util.misc import add_weight_decay
 
-from dataset.dataset_endoscopy_bs_mul import EndoscopyDataset, get_train_loader_distributed
-from v3_models_mae_clip_MuImg_FG import MaskedAutoencoder_MuImg_ViT as EndoVLP
-from v2_models_mae_clip_MuImg import MaskedAutoencoder_MuImg_ViT as MAE_or_CLIP
-# from v4_models_mae_clip_MuImg_FG_dinov3 import MaskedAutoencoder_MuImg_ViT as EndoVLP_dinov3
-from v5_models_mae_clip_MuImg_FG_dinov3_biomedclipText import MaskedAutoencoder_MuImg_ViT as EndoVLP_dinov3_biomedclipText
-
-from v5_models_mae_clip_MuImg_FG_dinov3_biomedclipText import build_M2GCLIP
-# from v6_models_mae_clip_MuImg_FG_dinov3_biomedclipText_UniLatent import build_M2GCLIP
-
-from engine_pretrain import train_one_epoch, train_one_epoch_mae_or_clip
+from dataset.dataset_endoscopy_bs_mul import get_train_loader_distributed
+from endovlm import build_endovlm
+from engine_pretrain import train_one_epoch
 
 
 def get_args_parser():
@@ -54,7 +46,6 @@ def get_args_parser():
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--debug_datasize', default=100, type=int)
     parser.add_argument('--ablation', action='store_true')
-
 
     # Model parameters
     parser.add_argument('--model', default='vit_base_patch16', choices=['vit_base_patch16', 'vit_large_patch16'], type=str, metavar='MODEL',
@@ -156,8 +147,7 @@ def main(args):
 
     #  --- Build DataLoader ---
     time_loader_start = time.time()
-    tokenizer = open_clip.get_tokenizer('ViT-B-16') if args.mode in ['clip', 'mae'] else open_clip.get_tokenizer('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
-    # tokenizer = open_clip.get_tokenizer("/mnt/data/yizhenyu/hf_models/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224")
+    tokenizer = open_clip.get_tokenizer('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
     data_loader_train, dataset_train, sampler_train = get_train_loader_distributed(args, misc, tokenizer)
     time_loader_end = time.time()
     print("Build DataLoader time:", str(datetime.timedelta(seconds=int(time_loader_end - time_loader_start))))
@@ -178,31 +168,9 @@ def main(args):
     
     # define the model
     print(f"Creating model: {args.mode}")
-    if args.mode == 'endovlp':
-        if args.vit_pretrain == 'clip':
-            model = EndoVLP(
-                img_size=args.input_size,
-                embed_dim=args.embed_dim, depth=args.depth, num_heads=args.num_heads,
-                decoder_embed_dim=args.decoder_embed_dim, decoder_depth=args.decoder_depth, 
-                decoder_num_heads=args.decoder_num_heads,
-                norm_pix_loss=args.norm_pix_loss, vit_pretrain=args.vit_pretrain,
-            )
-        elif args.vit_pretrain == 'dinov3':
-            model = build_M2GCLIP(model_type=args.model, args=args)
 
-    elif args.mode in ['mae', 'clip']:
-        model = MAE_or_CLIP(
-            img_size=args.input_size,
-            embed_dim=args.embed_dim, depth=args.depth, num_heads=args.num_heads,
-            decoder_embed_dim=args.decoder_embed_dim, decoder_depth=args.decoder_depth, 
-            decoder_num_heads=args.decoder_num_heads,
-            norm_pix_loss=args.norm_pix_loss,
-            mode = args.mode,
-            vit_pretrain = args.vit_pretrain
-        )
-
+    model = build_endovlm(model_type=args.model, args=args)
     model.to(device)
-
     model_without_ddp = model
     # print("Model = %s" % str(model_without_ddp))
 

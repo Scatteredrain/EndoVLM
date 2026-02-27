@@ -1,2 +1,0 @@
-from v3_models_mae_clip_MuImg_FG import MaskedAutoencoder_MuImg_ViT as EndoVLP
-from v2_models_mae_clip_MuImg import MaskedAutoencoder_MuImg_ViT as MAE_or_CLIP
