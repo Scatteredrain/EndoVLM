@@ -18,7 +18,7 @@ from dinov3.models.vision_transformer import vit_base, vit_large
 def build_endovlm(model_type='vit_base_patch16', args=None, pretrain_path=None):
     assert model_type in ['vit_base_patch16', 'vit_large_patch16']
     
-    # Initialize vision backbone
+    # Initialize vision backbone (ViT-B) from dinov3
     backbone = vit_base(
         patch_size=16,
         n_storage_tokens=4,       
@@ -26,16 +26,17 @@ def build_endovlm(model_type='vit_base_patch16', args=None, pretrain_path=None):
         mask_k_bias=True,      
     )
 
-    # Initialize text backbone
+    # Initialize text backbone (PubMedBert) from biomedclip
     biomedclip, _ = open_clip.create_model_from_pretrained(
         'hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224',
         cache_dir=os.path.expanduser('~/.cache/huggingface/hub')
     )
+    text_backbone = biomedclip.text
 
     # Initialize the main model
     model = MaskedAutoencoder_MuImg_ViT(
         backbone, 
-        biomedclip,
+        text_backbone,
         in_chans=3, 
         embed_dim=768, 
         depth=12, 
@@ -144,12 +145,12 @@ class MaskedAutoencoder_MuImg_ViT(nn.Module):
     """
     Masked Autoencoder for Multi-Image -- Text Interaction
     """
-    def __init__(self, backbone, biomedclip, in_chans=3, embed_dim=768, depth=12, num_heads=12,
+    def __init__(self, backbone, text_backbone, in_chans=3, embed_dim=768, depth=12, num_heads=12,
                 decoder_embed_dim=512, decoder_depth=8, decoder_num_heads=16,
                 mlp_ratio=4., norm_layer=nn.LayerNorm, norm_pix_loss=False, train_from_scratch=False, dino_weight_path=None):
         super().__init__()
 
-        # --- Dino Encoder ---
+        # ---Vision Encoder ---
         self.encoder = backbone
         self.encoder.mask_token.requires_grad = False # Freeze mask token since we use our own mae strategy
 
@@ -167,9 +168,9 @@ class MaskedAutoencoder_MuImg_ViT(nn.Module):
         self.decoder_norm = norm_layer(decoder_embed_dim)
         self.decoder_pred = nn.Linear(decoder_embed_dim, self.patch_size**2 * in_chans, bias=True)
 
-        # --- CLIP Text Encoder ---
-        self.text_encoder = biomedclip.text
-        text_embed_dim = biomedclip.text.proj[-1].out_features if hasattr(biomedclip.text, 'proj') else 512
+        # --- Text Encoder ---
+        self.text_encoder = text_backbone
+        text_embed_dim = text_backbone.proj[-1].out_features if hasattr(text_backbone, 'proj') else 512
 
         # --- Image Projection for cls_token & path_tokens aggregation ---
         self.image_feat_projection = nn.Linear(self.embed_dim*2, self.embed_dim)
@@ -526,10 +527,10 @@ class MaskedAutoencoder_MuImg_ViT(nn.Module):
             # Sub-text features: [Total_Sub, D_txt]
             sub_text_features = self.forward_text(sub_texts)
             
-            # Ablation -- only L_fg
-            loss_clip_global = torch.tensor(0.0, device=imgs.device)
+            # PSAA
+            loss_clip_global = self.forward_contrastive_loss(global_visual_features, global_text_features)
             loss_clip_FG, all_selected_indices = self.forward_fg_contrastive_loss(per_visual_features, sub_text_features, text_normal_flags, text_anatomy_flags, image_counts, sub_text_counts, K=K)
-            loss_clip = loss_clip_FG
+            loss_clip = loss_clip_global + loss_clip_FG
 
         # 3. Semantic Focus MAE Branch (Per-image reconstruction)
         if mode in ['both', 'mae_only']:
