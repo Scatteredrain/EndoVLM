@@ -24,12 +24,13 @@
 <!-- <p align="center">
   <img src="figs/retrieval.png" width="800">
 </p> -->
-* **Downstream Experiments Across Various Tasks**
+
+* **Downstream Experiments Across Various Tasks:**
 <p align="center">
   <img src="figs/comparison.png" width="600">
 </p>
 
-> **Note on Table Errata**:
+> **Note on Table Errata (compared with the submission file)**:
 > 1. **Data Correction**: Numerical results for `ClinicDB` and `ColonDB` columns were previously transposed (swapped) across all models; these have now been restored to their correct respective positions.
 > 2. **Header Reordering**: The dataset labels (table headers) have been reordered from `[Kva, Clinic, Colon, ETIS, Endo]` to `[Kva, Clinic, Endo, Colon, ETIS]`.
 > 3. **Impact Statement**: These changes represent clerical labeling fixes and do not alter the study's overall conclusions or model performance rankings.
