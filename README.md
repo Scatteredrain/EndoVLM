@@ -1,7 +1,7 @@
 
 # EndoVLM: An Endoscopy Vision-Language Pre-training Model via Anatomy-Guided Sparsity and Progressive Alignment
 
-> **Note to Reviewers:** > This repository contains the official PyTorch implementation of **EndoVLM**. It has been strictly anonymized for the double-blind peer review process. All institutional identifiers, author names, and external identifying links have been removed.
+> **Note to Reviewers:**  This repository contains the official PyTorch implementation of **EndoVLM**. It has been strictly anonymized for the double-blind peer review process. All institutional identifiers, author names, and external identifying links have been removed.
 
 ## 📖 Introduction
 
@@ -17,13 +17,24 @@
 * **Progressive Semantic-Aware Alignment (PSAA)**: Explicitly encodes clinical taxonomy into soft targets, enabling a robust transition from global patient-level matching to fine-grained anatomical and pathological alignment.
 * **Semantic-Concentrated Masked Autoencoder (SC-MAE)**: Preserves fine-grained diagnostic textures and geometric precision as a complementary regularization.
 * **Exceptional Zero-Shot Generalization**: Achieves flawless transferability (~100% AUC) in Upper-GI Anatomy Recognition and significantly outperforms existing baselines (e.g., BiomedCLIP) in challenging dynamic video analysis.
+<p align="center">
+  <img src="figs/zero_shot.png" width="400">
+</p>
 <!-- <img src="figs/zero_shot.png" width="40%"> <img src="figs/retrieval.png" width="55%"> -->
 <!-- <p align="center">
   <img src="figs/retrieval.png" width="800">
 </p> -->
+* **Downstream Experiments Across Various Tasks**
 <p align="center">
-  <img src="figs/zero_shot.png" width="400">
+  <img src="figs/comparison.png" width="600">
 </p>
+
+> **Note on Table Errata**:
+> 1. **Data Correction**: Numerical results for `ClinicDB` and `ColonDB` columns were previously transposed (swapped) across all models; these have now been restored to their correct respective positions.
+> 2. **Header Reordering**: The dataset labels (table headers) have been reordered from `[Kva, Clinic, Colon, ETIS, Endo]` to `[Kva, Clinic, Endo, Colon, ETIS]`.
+> 3. **Impact Statement**: These changes represent clerical labeling fixes and do not alter the study's overall conclusions or model performance rankings.
+
+
 
 ---
 
