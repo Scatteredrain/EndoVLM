@@ -1,7 +1,6 @@
 
 # EndoVLM: An Endoscopy Vision-Language Pre-training Model via Anatomy-Guided Sparsity and Progressive Alignment
 
-> **Note to Reviewers:**  This repository contains the official PyTorch implementation of **EndoVLM**. It has been strictly anonymized for the double-blind peer review process. All institutional identifiers, author names, and external identifying links have been removed.
 
 ## 📖 Introduction
 
@@ -29,12 +28,6 @@
 <p align="center">
   <img src="figs/comparison.png" width="600">
 </p>
-
-> **Note on Table Errata (compared with the submission file)**:
-> 1. **Data Correction**: Numerical results for `ClinicDB` and `ColonDB` columns were previously transposed (swapped) across all models; these have now been restored to their correct respective positions.
-> 2. **Header Reordering**: The dataset labels (table headers) have been reordered from `[Kva, Clinic, Colon, ETIS, Endo]` to `[Kva, Clinic, Endo, Colon, ETIS]`.
-> 3. **Impact Statement**: These changes represent clerical labeling fixes and do not alter the study's overall conclusions or model performance rankings.
-
 
 
 ---
