@@ -26,7 +26,7 @@
 
 * **Downstream Experiments Across Various Tasks:**
 <p align="center">
-  <img src="figs/comparison.png" width="600">
+  <img src="figs/comparison.jpg" width="600">
 </p>
 
 
