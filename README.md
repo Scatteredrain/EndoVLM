@@ -108,14 +108,7 @@ The script calls `main_pretrain.py`, which initializes the model from `endovlm.p
 
 ## 🏷️ LLM-based Data Annotation (`llm_extraction/`)
 
-The structured anatomy and pathology labels used for pre-training are generated via LLM-based annotation. The script `llm_extraction/extract_anatomy_pathology.py` contains all four annotation tasks with their full prompts (in English, assuming English-language input reports):
-
-| Task | Output Field | Description |
-|:---|:---|:---|
-| **QC** | `qc_flags` | Report type classification: gastroscopy vs. colonoscopy, standard vs. non-standard examination |
-| **Abnormality Flags** | `site_abnormality_flags` | Binary flag (0/1) per anatomical site (8 for gastroscopy, 9 for colonoscopy) indicating presence of abnormality |
-| **Findings Extraction** | `abnormal_findings` | Standardized abnormal finding terms (e.g., "erosion", "polyp") extracted from report text, with location/modifier words removed |
-| **Disease Entity Extraction** | `diagnosis_entities` | Structured disease entities from endoscopy and pathology diagnoses, each with 8 fields (normalized_text, location_modifier, severity_modifier, grade_modifier, status_modifier, uncertain, clinical_action_related, etc.) |
+The structured anatomy and pathology labels used for pre-training are generated via LLM-based annotation. The script `llm_extraction/extract_anato_patho.py` contains all four annotation tasks with their full prompts (in English, assuming English-language input reports):
 
 ### Quick Start
 
@@ -126,38 +119,13 @@ pip install openai tqdm
 # Set your DashScope (Alibaba Cloud) API key
 export DASHSCOPE_API_KEY="your-api-key"
 
-# Run all four tasks
+# Run
 python llm_extraction/extract_anatomy_pathology.py \
-    --task all \
+    --base_url your_api_base_url \
     --input data/reports.jsonl \
     --output data/reports_annotated.jsonl
 
-# Or run a single task
-python llm_extraction/extract_anatomy_pathology.py \
-    --task abnormality_flags \
-    --input data/reports.jsonl \
-    --output data/reports_flags.jsonl
 ```
-
-### Input Format (JSONL)
-
-Each line should be a JSON object with the following fields (depending on task):
-
-```json
-{
-  "id": "case_001",
-  "exam_item": "Gastroscopy",
-  "endo_report": "This is a gastroscopy report.\nEsophagus: Mucosa is smooth...\nDuodenum: No abnormalities...",
-  "endo_diagnosis": "Chronic non-atrophic gastritis",
-  "path_diagnosis": "(Antrum) Chronic non-atrophic gastritis"
-}
-```
-
-### Output Format
-
-The script appends annotated results to the output JSONL, with checkpoint/resume support (skips already-processed IDs). Each output line contains the original fields plus the annotation results.
-
-> **Model**: Qwen3-Max-2025-09-23 (or Qwen-Max) via DashScope API. All prompts are in English and assume English-language structured endoscopy reports as input.
 
 ---
 
