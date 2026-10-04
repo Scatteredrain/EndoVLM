@@ -179,13 +179,3 @@ image_features = F.normalize(model.image_projection_fg(feat), p=2, dim=-1)
 text_features = F.normalize(model.forward_text(tokenizer(["An endoscopic image of pylorus."])), p=2, dim=-1)
 
 ```
-
----
-
-## 📄 License
-
-* **Code** (e.g., `endovlm.py`, `main_pretrain.py`, `engine_pretrain.py`, `inference.ipynb`): Apache License 2.0, see [`LICENSE`](LICENSE).
-* **Model weights** (`pretrained/endovlm_vitb16.pth`) and the bundled `dinov3/` code: distributed under the [DINOv3 License](https://ai.meta.com/resources/models-and-libraries/dinov3-license/), see [`LICENSE-DINOv3`](LICENSE-DINOv3). The released checkpoint contains DINOv3-derived weights; use and redistribution must comply with the DINOv3 License and include a copy of the agreement.
-* The text encoder follows the MIT license of [BiomedCLIP](https://huggingface.co/microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224).
-
-This project is released for research purposes. Clinical use requires additional regulatory approval.
