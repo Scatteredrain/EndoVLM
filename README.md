@@ -137,7 +137,7 @@ python llm_extraction/extract_anatomy_pathology.py \
 We release the ViT-B/16 EndoVLM model reported in the paper:
 
 | Checkpoint | Backbone | Text Encoder |
-|---|---|---|---|
+|---|---|---|
 | `pretrained/endovlm_vitb16.pth` | DINOv3 ViT-B/16 | BiomedCLIP PubMedBERT |
 
 Download the weight file (~854 MB) from HuggingFace ([`Scatteredrain/EndoVLM`](https://huggingface.co/Scatteredrain/EndoVLM)) and place it at `pretrained/endovlm_vitb16.pth`.
