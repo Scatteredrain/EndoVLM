@@ -44,14 +44,17 @@ The codebase is organized as follows to facilitate reproducibility:
 * `main_pretrain.py`: Main entry script for distributed pre-training.
 * `main_pretrain.sh`: Shell script containing hyperparameters to launch the training pipeline.
 * `llm_extraction/`: LLM-based annotation pipeline for extracting structured anatomy/pathology labels from raw clinical reports.
+* `inference.ipynb`: Zero-shot inference demo (upper-GI anatomy recognition) on the bundled samples.
+* `pretrained/`: Directory for backbone / released checkpoint weights (see [Released Checkpoint](#-released-checkpoint)).
+* `data/zeroshot/`: Three bundled hyper-kvasir samples used by `inference.ipynb`.
 
 ---
 
 ## 🛠️ Installation
 
-1. Clone this anonymous repository:
+1. Clone this repository:
 ```bash
-git clone <anonymous_repo_url>
+git clone git@github.com:Scatteredrain/EndoVLM.git
 cd EndoVLM
 
 ```
@@ -129,22 +132,50 @@ python llm_extraction/extract_anatomy_pathology.py \
 
 ---
 
+## 📦 Released Checkpoint
+
+We release the ViT-B/16 EndoVLM model reported in the paper:
+
+| Checkpoint | Backbone | Text Encoder | SHA-256 |
+|---|---|---|---|
+| `pretrained/endovlm_vitb16.pth` | DINOv3 ViT-B/16 | BiomedCLIP PubMedBERT | `bef09f2c62b0f88aee183dd9d4548782740f3792a0d3988807f248478400b975` |
+
+The weight file (~854 MB) is distributed separately from this repository (weights are not tracked by git). Download it from the [GitHub Releases page](https://github.com/Scatteredrain/EndoVLM/releases) and place it at `pretrained/endovlm_vitb16.pth`.
+
+---
+
 ## 📈 Evaluation & Inference
 
-To extract visual-linguistic features or reproduce the zero-shot evaluation, you can initialize the model and load our pre-trained weights (weights will be made publicly available upon acceptance).
+### Zero-Shot Inference Demo
+
+`inference.ipynb` runs zero-shot upper-GI anatomy recognition on three bundled hyper-kvasir samples (`data/zeroshot/`), following the prompt-based protocol of the paper. Put the released checkpoint at `pretrained/endovlm_vitb16.pth` and run the notebook from the repository root.
 
 Example inference snippet:
 
 ```python
 import torch
+import torch.nn.functional as F
+import open_clip
 from endovlm import build_endovlm
 
-# Build model and load pre-trained weights
-model = build_endovlm(model_type='vit_base_patch16', pretrain_path='xxx')
+tokenizer = open_clip.get_tokenizer('hf-hub:microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224')
+
+# Build the model, then load the released weights
+model = build_endovlm(model_type='vit_base_patch16')
+msg = model.load_state_dict(
+    torch.load('pretrained/endovlm_vitb16.pth', map_location='cpu', weights_only=False)['model'],
+    strict=False,
+)
 model.eval()
 
-# Extract representations
-image_features,_,_ = model.forward_encoder(image_set)
-text_features = model.forward_text(["This is an image of Esophagus."])
+# Extract fine-grained (anatomy-level) image features
+latent, _, _ = model.forward_encoder(image_tensor, 0.0)
+cls_tokens = latent[:, 0]
+patch_tokens = latent[:, 1 + model.encoder.n_storage_tokens:]
+feat = model.image_feat_projection(torch.cat([cls_tokens, patch_tokens.mean(dim=1)], dim=1))
+image_features = F.normalize(model.image_projection_fg(feat), p=2, dim=-1)
+
+# Extract text features
+text_features = F.normalize(model.forward_text(tokenizer(["An endoscopic image of pylorus."])), p=2, dim=-1)
 
 ```

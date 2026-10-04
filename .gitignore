@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+output_dir*/
+torchrun_logs/
+vis_out*/
+vis_recon_out/
+.ipynb_checkpoints/
+references/
+*.pth

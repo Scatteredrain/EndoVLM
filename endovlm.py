@@ -7,8 +7,8 @@ import torch.distributed as dist
 from torch.nn.utils.rnn import pad_sequence
 from functools import partial
 
-# Set HuggingFace Endpoint
-os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+# Set HuggingFace Endpoint (override via the HF_ENDPOINT environment variable)
+os.environ.setdefault('HF_ENDPOINT', 'https://hf-mirror.com')
 
 import open_clip
 import numpy as np
@@ -50,7 +50,8 @@ def build_endovlm(model_type='vit_base_patch16', args=None, pretrain_path=None):
     )
     
     # Load weights
-    model.load_state_dict(torch.load(pretrain_path, map_location='cpu'))
+    if pretrain_path is not None:
+        model.load_state_dict(torch.load(pretrain_path, map_location='cpu'))
     return model
 
 def load_text_weights(model, biomedclip):
