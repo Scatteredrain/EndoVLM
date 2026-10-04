@@ -140,7 +140,7 @@ We release the ViT-B/16 EndoVLM model reported in the paper:
 |---|---|---|---|
 | `pretrained/endovlm_vitb16.pth` | DINOv3 ViT-B/16 | BiomedCLIP PubMedBERT | `bef09f2c62b0f88aee183dd9d4548782740f3792a0d3988807f248478400b975` |
 
-The weight file (~854 MB) is distributed separately from this repository (weights are not tracked by git). Download it from the [GitHub Releases page](https://github.com/Scatteredrain/EndoVLM/releases) and place it at `pretrained/endovlm_vitb16.pth`.
+The weight file (~854 MB) is distributed separately from this repository (weights are not tracked by git). Download it from HuggingFace ([`Scatteredrain/EndoVLM`](https://huggingface.co/Scatteredrain/EndoVLM)) and place it at `pretrained/endovlm_vitb16.pth`.
 
 ---
 
